@@ -1,5 +1,4 @@
-import sys
-import os
+import load_file
 
 def word_to_dict(word):
     d = {}
@@ -35,12 +34,9 @@ def is_valid(passphrase):
     return True
 
 def main():
-    pathname = os.path.dirname(sys.argv[0])
-    inputfile = os.path.join(pathname, 'day4.input.txt')
-
     valid = 0
 
-    with open(inputfile) as f:
+    with load_file.open_file('day4.input.txt') as f:
         for line in f:
             if is_valid(line.split()):
                 valid = valid + 1
