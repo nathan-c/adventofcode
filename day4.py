@@ -1,4 +1,5 @@
-import sys, os
+import sys
+import os
 
 def word_to_dict(word):
     d = {}
@@ -13,10 +14,9 @@ def is_valid(passphrase):
     for word in passphrase:
         word_list = length_map.get(len(word), [])
         length_map[len(word)] = word_list
-        if len(word_list) == 0:
+        if word_list:
             word_list.append(word_to_dict(word))
             continue
-        
         for d in word_list:
             d_local = d.copy()
             for letter in word:
@@ -28,7 +28,7 @@ def is_valid(passphrase):
                     del d_local[letter]
                 else:
                     d_local[letter] = count
-            if len(d_local) == 0:
+            if d_local:
                 return False
 
         word_list.append(word_to_dict(word))
@@ -40,8 +40,8 @@ def main():
 
     valid = 0
 
-    with open(inputfile) as file:
-        for line in file:
+    with open(inputfile) as f:
+        for line in f:
             if is_valid(line.split()):
                 valid = valid + 1
 
@@ -49,4 +49,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

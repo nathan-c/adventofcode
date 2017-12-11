@@ -1,12 +1,12 @@
 import math
 from enum import Enum
 
-input = 312051
-i = math.floor(input**0.5)
+input_val = 312051
+i = math.floor(input_val**0.5)
 if i % 2 == 0:
     i -= 1
 
-remainder = input - i**2
+remainder = input_val - i**2
 
 # now we can count round from bottom right corner
 
@@ -98,14 +98,21 @@ def move(d, p):
         return up(p)
 
 
-def sum(p):
-    return  board.get(up_left(p), 0) + board.get(up(p), 0) + board.get(up_right(p), 0) + board.get(right(p), 0) + board.get(down_right(p), 0) + board.get(down(p), 0) + board.get(down_left(p), 0) + board.get(left(p), 0)
+def sum_surrounding(p):
+    return  board.get(up_left(p), 0) + \
+            board.get(up(p), 0) + \
+            board.get(up_right(p), 0) + \
+            board.get(right(p), 0) + \
+            board.get(down_right(p), 0) + \
+            board.get(down(p), 0) + \
+            board.get(down_left(p), 0) + \
+            board.get(left(p), 0)
 
 
-while board[position] < input:
+while board[position] < input_val:
     if should_turn(direction, position):
         direction = turn(direction)
     position = move(direction, position)
-    board[position] = sum(position)
+    board[position] = sum_surrounding(position)
 
 print(board[position])
