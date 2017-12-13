@@ -10,16 +10,16 @@ def max_index(x):
 def run(banks):
     no_cycles = 0
     no_banks = len(banks)
-    seen = set()
+    seen = {}
     while tuple(banks) not in seen:
-        seen.add(tuple(banks))
+        seen[tuple(banks)] = no_cycles
         i, no = max_index(banks)
         banks[i] = 0
         for count in range(no):
             current_i = (i + count + 1) % no_banks
             banks[current_i] = banks[current_i] + 1
         no_cycles += 1
-    return no_cycles
+    return no_cycles - seen[tuple(banks)]
 
 
 def main():
