@@ -103,7 +103,7 @@ def find_bad_branch(tree_node):
 
 def calculate_correct_weight(bad_node):
     for sibling in bad_node.get_siblings():
-        return sibling.weight
+        return sibling.cumulative_weight - bad_node.cumulative_weight + bad_node.weight
 
 def main(filename):
     tree_dict, weights = process_file(filename)

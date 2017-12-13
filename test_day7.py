@@ -14,7 +14,6 @@ def test_process_file():
     tree, weights = day7.process_file('test_day7.input.txt')
     assert tree
 
-
 def test_find_root():
     tree, weights = day7.process_file('test_day7.input.txt')
     root = day7.find_root(tree)
@@ -33,4 +32,4 @@ def test_find_odd_weight():
 
 def test_main():
     size = day7.main('test_day7.input.txt')
-    assert size ==
+    assert size == 60
