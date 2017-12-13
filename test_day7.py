@@ -24,3 +24,13 @@ def test_add_weights():
     tree_dict, weights = day7.process_file('test_day7.input.txt')
     tree = day7.build_tree(tree_dict, weights)
     assert tree.cumulative_weight == sum(weights.values())
+
+def test_find_odd_weight():
+    tree_dict, weights = day7.process_file('test_day7.input.txt')
+    tree = day7.build_tree(tree_dict, weights)
+    node = day7.find_odd_weight(tree)
+    assert node.value == 'ugml'
+
+def test_main():
+    size = day7.main('test_day7.input.txt')
+    assert size ==

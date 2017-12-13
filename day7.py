@@ -1,4 +1,5 @@
 import load_file
+import statistics
 
 class TreeNode():
     def __init__(self, value, weight, parent):
@@ -14,6 +15,11 @@ class TreeNode():
         if self.parent:
             self.parent.increase_weight(new_weight)
         self.cumulative_weight += new_weight
+    def get_siblings(self):
+        if self.parent:
+            for sibling in self.parent.children:
+                if sibling != self:
+                    yield sibling
 
 def build_tree(tree_dict, weights):
     root_value = find_root(tree_dict)
@@ -63,35 +69,48 @@ def find_root(tree_dict):
         if name not in all_children:
             return name
 
-# def find_odd_weight(tree_node):
-#     q = [tree_node]
-#     while q:
-#         current_node = q.pop()
-#         for child in current_node.children:
-#             if child.cumulative_weight - child.weight == 0:
-                
-#             q.append(child)
-        
-
-#     d = {}
-#     for child in tree_node.children:
-#         count, nodes = d.get(child.cumulative_weight, (0, []))
-#         nodes.append(child)
-#         d[child.cumulative_weight] = (count + 1, nodes)
-#     lonely_weights = [x for x in d.items() if x[1][0] == 1]
-#     if len(lonely_weights) == 1:
-#         # we have found the weight that is different or there is only 1 child
-#         return find_odd_weight(lonely_weights[0])
-#     elif len(lonely_weights) == 2:
-#         # only 2 children so both weights only appear once
-#     elif:
-#         # all are the 
+def find_odd_weight(tree_node):
+    bad1, bad2 = find_bad_branch(tree_node)
+    if not bad1 and not bad2:
+        return tree_node
+    if not bad2:
+        return find_odd_weight(bad1)
+    test1 = find_odd_weight(bad1)
+    test2 = find_odd_weight(bad2)
+    if test1 == bad1 and test2 == bad2:
+        # we know the problem exists at this level return either
+        return bad1
+    if test1:
+        return test2
+    else:
+        return test1
 
 
-def main():
-    tree, weights = process_file('day7.input.txt')
-    root = find_root(tree)
-    print(root)
+def find_bad_branch(tree_node):
+    lower = []
+    upper = []
+    mean = statistics.mean([x.cumulative_weight for x in tree_node.children])
+    for child in tree_node.children:
+        if mean == child.cumulative_weight:
+            return None, None
+        if child.cumulative_weight < mean:
+            lower.append(child)
+        else:
+            upper.append(child)
+    if len(lower) == 1 and len(upper) == 1:
+        return lower[0], upper[0]
+    return lower[0] if len(lower) == 1 else upper[0], None
+
+def calculate_correct_weight(bad_node):
+    for sibling in bad_node.get_siblings():
+        return sibling.weight
+
+def main(filename):
+    tree_dict, weights = process_file(filename)
+    tree = build_tree(tree_dict, weights)
+    node = find_odd_weight(tree)    
+    corrext_weight = calculate_correct_weight(node)
+    return corrext_weight
 
 if __name__ == '__main__':
-    main()
+    print(main('day7.input.txt'))
