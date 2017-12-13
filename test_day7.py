@@ -19,3 +19,8 @@ def test_find_root():
     tree, weights = day7.process_file('test_day7.input.txt')
     root = day7.find_root(tree)
     assert root == 'tknk'
+
+def test_add_weights():
+    tree_dict, weights = day7.process_file('test_day7.input.txt')
+    tree = day7.build_tree(tree_dict, weights)
+    assert tree.cumulative_weight == sum(weights.values())
