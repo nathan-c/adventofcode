@@ -1,10 +1,10 @@
 import day8
 
 x = [
-    'b inc 5 if a > 1/n',
-    'a inc 1 if b < 5/n',
-    'c dec -10 if a >= 1/n',
-    'c inc -20 if c == 10/n'
+    'b inc 5 if a > 1',
+    'a inc 1 if b < 5',
+    'c dec -10 if a >= 1',
+    'c inc -20 if c == 10'
 ]
 
 def test_run():
