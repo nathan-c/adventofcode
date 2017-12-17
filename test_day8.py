@@ -9,3 +9,4 @@ x = [
 
 def test_run():
     assert day8.run(x) == 1
+    
