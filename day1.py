@@ -10,7 +10,7 @@ print(sum)
 
 length = len(input)
 sum = 0
-for i in xrange(length):
+for i in range(length):
     if input[i] == input[(i + (length / 2)) % length]:
         sum += int(input[i])
 
