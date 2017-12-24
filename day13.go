@@ -29,9 +29,9 @@ func attemptFirewall(firewall map[int]int) int {
 	}
 }
 
-func main() {
+func parseInput(fileName string) map[int]int {
 	firewall := make(map[int]int)
-	dat, _ := ioutil.ReadFile("day13.input.txt")
+	dat, _ := ioutil.ReadFile(fileName)
 	stringFile := string(dat)
 	lines := strings.Split(stringFile, "\n")
 	for _, line := range lines {
@@ -43,5 +43,10 @@ func main() {
 		val, _ := strconv.Atoi(splitLine[1])
 		firewall[key] = val
 	}
+	return firewall
+}
+
+func main() {
+	firewall := parseInput("day13.input.txt")
 	print(attemptFirewall(firewall))
 }
