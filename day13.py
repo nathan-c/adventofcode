@@ -41,7 +41,7 @@ def try_attempt_firewall_fast(fire_wall):
 
     for i in itertools.count():
         for position in fire_wall:
-            if not any(scanner(fire_wall[position], position + i) == 0:
+            if not any(scanner(fire_wall[position], position + i)) == 0:
                 return i
 
 
