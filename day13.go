@@ -33,7 +33,7 @@ func parseInput(fileName string) map[int]int {
 	firewall := make(map[int]int)
 	dat, _ := ioutil.ReadFile(fileName)
 	stringFile := string(dat)
-	lines := strings.Split(stringFile, "\n")
+	lines := strings.Split(stringFile, "\r\n")
 	for _, line := range lines {
 		splitLine := strings.Split(line, ": ")
 		if len(splitLine) != 2 {
