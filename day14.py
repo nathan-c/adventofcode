@@ -1,10 +1,25 @@
 import day10
 
+
 def run(key):
-    board = []
+    ''' This is really slow :( '''
+    sum_board = 0
     for i in range(128):
-        lengths = day10.get_lengths('{}-{}'.format(key, i))
-        _, _, data = day10.single_round(lengths, 0, 0, [range(128)])
-        data = day10.format_output(day10.compress_hash(data), '04b')
-        board.append(data)
-    return sum(1 for x in board)
+        key_i = '{}-{}'.format(key, i)
+        # run hash
+        data = day10.knot_hash(key_i)
+        # get hex output
+        hex_data = day10.format_output(data, '02x')
+        # convert to binary then sum all digits
+        count = sum(sum(sum(int(j) for j in b)
+                        for b in format(int(x, 16), '04b')) for x in hex_data)
+        sum_board += count
+    return sum_board
+
+
+def main():
+    print(run('hxtvlmkl'))
+
+
+if __name__ == '__main__':
+    main()

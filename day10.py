@@ -24,9 +24,10 @@ def knot_hash(input_bytes, list_size=256):
 
 def compress_hash(sparse_hash):
     dense_hash = []
-    for i in range(0, len(sparse_hash), 16):
+    chunk_size = len(sparse_hash) // 16
+    for i in range(0, len(sparse_hash), chunk_size):
         element = 0
-        for j in range(16):
+        for j in range(chunk_size):
             element ^= sparse_hash[i + j]
         dense_hash.append(element)
     return dense_hash
