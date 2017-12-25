@@ -53,8 +53,8 @@ def swap(l, a, b):
     l[b] = x
 
 
-def format_output(dense_hash):
-    def fmt(x): return format(x, '02x')
+def format_output(dense_hash, formatting='02x'):
+    def fmt(x): return format(x, formatting)
     string_representation = map(fmt, dense_hash)
     return ''.join(string_representation)
 
