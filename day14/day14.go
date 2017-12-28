@@ -1,8 +1,7 @@
 package main
 
 import (
-	"encoding/binary"
-	"encoding/hex"
+	"strconv"
 	"fmt"
 )
 
@@ -42,7 +41,7 @@ func knotHash(input string) []int {
 }
 
 func getLengths(inputBytes string) []int {
-	lengths := make([]int, len(inputBytes)+5)
+	lengths := make([]int, len(inputBytes))
 	for pos, char := range inputBytes {
 		lengths[pos] = int(char)
 	}
@@ -53,9 +52,9 @@ func singleRound(lengths []int, currentPosition int, skipSize int, data []int) (
 	for _, length := range lengths {
 		for i := 0; i < (length / 2); i++ {
 			swap(data, currentPosition+i, currentPosition+length-i-1)
-			currentPosition = (currentPosition + length + skipSize) % len(data)
-			skipSize++
 		}
+		currentPosition = (currentPosition + length + skipSize) % len(data)
+		skipSize++
 	}
 	return currentPosition, skipSize, data
 }
@@ -73,7 +72,7 @@ func compressHash(sparseHash []int) []int {
 	chunkSize := len(sparseHash) / 16
 	for i := 0; i < len(sparseHash); i += chunkSize {
 		element := 0
-		for j := 0; i < chunkSize; i++ {
+		for j := 0; j < chunkSize; j++ {
 			element ^= sparseHash[i+j]
 		}
 		denseHash = append(denseHash, element)
@@ -87,14 +86,13 @@ func formatOutput(denseHash []int) []bool {
 		intermediate1 += fmt.Sprintf("%02x", x)
 	}
 	intermediate2 := ""
-	for _, char := range intermediate1 {
-		s, _ := hex.DecodeString(string(char))
-		i, _ := binary.Varint(s)
-		intermediate2 += fmt.Sprintf("%04b", i)
+	for _, y := range intermediate1 {
+		s, _ := strconv.ParseInt(string(rune(y)), 16, 64)
+		intermediate2 += fmt.Sprintf("%04b", s)
 	}
 	var retVal []bool
-	for _, char := range intermediate2 {
-		if char == '1' {
+	for _, z := range intermediate2 {
+		if z == '1' {
 			retVal = append(retVal, true)
 		} else {
 			retVal = append(retVal, false)
@@ -131,15 +129,10 @@ func fillRegion(board [][]bool, r int, c int) int {
 }
 
 func getJoining(board [][]bool, row int, col int) []coord {
-	//tl := coord{row - 1, col - 1}
 	cl := coord{row, col - 1}
-	//bl := coord{row + 1, col - 1}
 	bc := coord{row + 1, col}
-	//br := coord{row + 1, col + 1}
 	cr := coord{row, col + 1}
-	//tr := coord{row - 1, col + 1}
 	tc := coord{row - 1, col}
-	//possibleVals := []coord{tl, cl, bl, bc, br, cr, tr, tc}
 	possibleVals := []coord{cl, bc, cr, tc}
 	height := len(board)
 	width := len(board[0])
