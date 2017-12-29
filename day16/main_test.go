@@ -8,19 +8,17 @@ import (
 func Test_spin(t *testing.T) {
 	tests := []struct {
 		name   string
-		input  []rune
+		input  programs
 		number int
-		want   []rune
+		want   string
 	}{
-		{"test1", []rune{'a', 'b', 'c', 'd', 'e'}, 3, []rune{'c', 'd', 'e', 'a', 'b'}},
+		{"test1", programs{[]rune{'a', 'b', 'c', 'd', 'e'}, 0}, 3, "cdeab"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			spin(&tt.input, tt.number)
-			for i, actual := range tt.input {
-				if actual != tt.want[i] {
-					t.Errorf("spin(%v, %v)[%v] = %v, want %v", tt.input, tt.number, i, actual, tt.want[i])
-				}
+			if tt.input.String() != tt.want {
+				t.Errorf("spin(%v, %v) = %v, want %v", tt.input, tt.number, tt.input.String(), tt.want)
 			}
 		})
 	}
@@ -29,20 +27,18 @@ func Test_spin(t *testing.T) {
 func Test_exchange(t *testing.T) {
 	tests := []struct {
 		name  string
-		input []rune
+		input programs
 		a     int
 		b     int
-		want  []rune
+		want  string
 	}{
-		{"test1", []rune{'a', 'b', 'c', 'd', 'e'}, 2, 4, []rune{'a', 'b', 'e', 'd', 'c'}},
+		{"test1", programs{[]rune{'a', 'b', 'c', 'd', 'e'}, 0}, 2, 4, "abedc"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			exchange(&tt.input, tt.a, tt.b)
-			for i, actual := range tt.input {
-				if actual != tt.want[i] {
-					t.Errorf("exchange(%v, %v, %v)[%v] = %v, want %v", tt.input, tt.a, tt.b, i, actual, tt.want[i])
-				}
+			if tt.input.String() != tt.want {
+				t.Errorf("exchange(%v, %v, %v) = %v, want %v", tt.input, tt.a, tt.b, tt.input.String(), tt.want)
 			}
 		})
 	}
@@ -51,20 +47,18 @@ func Test_exchange(t *testing.T) {
 func Test_partner(t *testing.T) {
 	tests := []struct {
 		name  string
-		input []rune
+		input programs
 		a     rune
 		b     rune
-		want  []rune
+		want  string
 	}{
-		{"test1", []rune{'a', 'b', 'c', 'd', 'e'}, 'e', 'c', []rune{'a', 'b', 'e', 'd', 'c'}},
+		{"test1", programs{[]rune("abcde"), 4}, 'e', 'b', "baecd"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			partner(&tt.input, tt.a, tt.b)
-			for i, actual := range tt.input {
-				if actual != tt.want[i] {
-					t.Errorf("partner(%v, %v, %v)[%v] = %v, want %v", tt.input, tt.a, tt.b, i, actual, tt.want[i])
-				}
+			if tt.input.String() != tt.want {
+				t.Errorf("partner(%v, %v, %v) = %v, want %v", tt.input, tt.a, tt.b, tt.input.String(), tt.want)
 			}
 		})
 	}
@@ -74,9 +68,9 @@ func Test_parseInput(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  []rune
+		want  string
 	}{
-		{"test1", "s1,x3/4,pe/b", []rune{'b', 'a', 'e', 'd', 'c'}},
+		{"test1", "s1,x3/4,pe/b", "baedc"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -99,7 +93,7 @@ func Test_part2(t *testing.T) {
 		iterations int
 		want       string
 	}{
-		{"test1", "s1,x3/4,pe/b", 5, 2, "ceabd"},
+		{"test1", "s1,x3/4,pe/b", 5, 2, "ceadb"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
