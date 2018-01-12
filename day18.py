@@ -20,43 +20,31 @@ class Duet():
     def set(self, x, y):
         int_y = self.get_int(y)
         self._registers[x] = int_y
-        #print('{}-set {} {} -> {}'.format(threading.get_ident(), x, y, int_y))
 
     def add(self, x, y):
         int_y = self.get_int(y)
         self._registers[x] = self._registers.get(x, 0) + int_y
-        # print('{}-add {} {} -> {}'.format(threading.get_ident(),
-        #                                   x, y, self._registers[x]))
 
     def mul(self, x, y):
         int_y = self.get_int(y)
         self._registers[x] = self._registers.get(x, 0) * int_y
-        # print('{}-mul {} {} -> {}'.format(threading.get_ident(),
-        #                                   x, y, self._registers[x]))
 
     def mod(self, x, y):
         int_y = self.get_int(y)
         self._registers[x] = self._registers.get(x, 0) % int_y
-        # print('{}-mod {} {} -> {}'.format(threading.get_ident(),
-        #                                   x, y, self._registers[x]))
 
     def jgz(self, x, y):
         int_x = self.get_int(x)
         int_y = self.get_int(y)
-        # print('{}-jgz {} {} -> {}'.format(threading.get_ident(), x, y, int_y))
         if int_x > 0:
             return int_y
 
     def snd2(self, x, q):
-        #print('{}-snd2 {}'.format(threading.current_thread().name, x))
         self._freq += 1
         int_x = self.get_int(x)
         q.put_nowait(int_x)
-        # if(threading.current_thread().name == 't1'):
-        #     print(self._freq)
 
     def rcv2(self, x, q):
-        #print('{}-rcv2 {}'.format(threading.current_thread().name, x))
         y = q.get(timeout=2)
         self._registers[x] = y
 
@@ -76,6 +64,7 @@ inst_map = {
     'rcv': lambda d, r: d.rcv(r[1]),
     'jgz': lambda d, r: d.jgz(r[1], r[2]),
 }
+
 inst_map2 = {
     'snd': lambda d, r, qsnd, qrcv: d.snd2(r[1], qsnd),
     'set': lambda d, r, qsnd, qrcv: d.set(r[1], r[2]),
