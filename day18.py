@@ -116,8 +116,10 @@ def part2(instructions):
     d0.set('p', 0)
     d1 = Duet()
     d1.set('p', 1)
-    t0 = threading.Thread(target=run2, args=(d0, instructions, q1, q2), name='t0')
-    t1 = threading.Thread(target=run2, args=(d1, instructions, q2, q1), name='t1')
+    t0 = threading.Thread(target=run2, args=(
+        d0, instructions, q1, q2), name='t0')
+    t1 = threading.Thread(target=run2, args=(
+        d1, instructions, q2, q1), name='t1')
     try:
         t0.start()
         t1.start()
