@@ -8,16 +8,18 @@ import (
 func main() {
 	grid := [][]bool{{false, true, false}, {false, false, true}, {true, true, true}}
 	map2, map3 := loadRulesFromFile("day21.input.txt")
-	println(len(map2))
-	println(len(map3))
 	for i := 0; i < 5; i++ {
-		print2D(grid)
-		println()
 		grid = runIteration(grid, map2, map3)
 	}
-	print2D(grid)
-	println()
+	print("part1: ")
 	println(countOn(grid))
+	grid = [][]bool{{false, true, false}, {false, false, true}, {true, true, true}}
+	for i := 0; i < 18; i++ {
+		grid = runIteration(grid, map2, map3)
+	}
+	print("part2: ")
+	println(countOn(grid))
+	print(len(grid))
 }
 
 func print2D(s [][]bool) {
