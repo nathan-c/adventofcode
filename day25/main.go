@@ -48,7 +48,7 @@ func parseInput(blueprintFile string) map[rune]step {
 	rx := regexp.MustCompile(`(?m:In state (?P<state>\w):\s+If the current value is (?P<currentValue0>\d+).\s+- Write the value (?P<writeValue0>\d+).\s+- Move one slot to the (?P<direction0>right|left).\s+- Continue with state (?P<nextInstruction0>\w).\s+If the current value is (?P<currentValue1>\d+).\s+- Write the value (?P<writeValue1>\d+).\s+- Move one slot to the (?P<direction1>right|left).\s+- Continue with state (?P<nextInstruction1>\w))`)
 	blueprints := make(map[rune]step)
 	blocks := strings.Split(blueprintFile, "\n\n")
-	for _, block := range blocks[1:] {
+	for _, block := range blocks[1:] { // skip the first block as it is not a blueprint state definition
 		matches := getMatches(rx, block)
 		step := step{
 			rune(matches["state"][0]),
