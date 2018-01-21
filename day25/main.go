@@ -28,12 +28,12 @@ func runPart1(blueprint map[rune]step, beginState rune, steps int) int {
 	tape := make(map[int]int8)
 	position := 0
 	tape[position] = 0
-	current_state := blueprint[beginState]
+	currentState := blueprint[beginState]
 	for i := 0; i < steps; i++ {
-		step := current_state.Internals[tape[position]]
+		step := currentState.Internals[tape[position]]
 		tape[position] = step.WriteValue
 		position += step.MoveDirection
-		current_state = blueprint[step.NextInstruction]
+		currentState = blueprint[step.NextInstruction]
 	}
 	checksum := 0
 	for _, v := range tape {
