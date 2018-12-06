@@ -25,27 +25,6 @@ getPoints (x, y, w, h) =
 
 slice from to xs = read (take (to - from + 1) (drop from xs)) :: Int
 
-parseLine :: String -> (Int, Int, Int, Int, Int)
-parseLine l =
-    let idStart = 1
-        idEnd   = getIndex '@' - 2
-        xStart  = getIndex '@' + 2
-        xEnd    = getIndex ',' - 1
-        yStart  = getIndex ',' + 1
-        yEnd    = getIndex ':' - 1
-        wStart  = getIndex ':' + 2
-        wEnd    = getIndex 'x' - 1
-        hStart  = getIndex 'x' + 1
-        hEnd    = (length l) - 1
-    in  ( slice idStart idEnd l
-        , slice xStart  xEnd  l
-        , slice yStart  yEnd  l
-        , slice wStart  wEnd  l
-        , slice hStart  hEnd  l
-        )
-    where getIndex x = fromMaybe 0 $ x `elemIndex` l
-
-
 parseLineShort :: String -> (Int, Int, Int, Int)
 parseLineShort l =
     let xStart = getIndex '@' + 2
