@@ -1,19 +1,22 @@
 import           Data.Char
 
+main :: IO ()
 main = part2
 
+part1 :: IO ()
 part1 = do
     content <- readFile "./input.txt"
     let processed = processAll content
     print processed
     print $ length processed
 
+part2 :: IO ()
 part2 = do
     content <- readFile "./input.txt"
     let filtered = map (\a -> filter (\b -> (toLower b) /= a) content) ['a'..'z']
-    print filtered
+    --print filtered
     let processed = map (length.processAll) filtered
-    print processed
+    --print processed
     print $ minimum processed
 
 processAll :: [Char] -> [Char]
