@@ -241,4 +241,3 @@ func parseInput() acres {
 	return a
 }
 
-func parseLine() {}
