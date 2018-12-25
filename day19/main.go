@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -13,48 +14,58 @@ func main() {
 	run(make([]int, 6, 6))
 	part2 := make([]int, 6, 6)
 	part2[0] = 1
-	//run(part2)
+	run(part2)
 }
 
+// i tried for a while to optimise the hot loops but kept introducing bugs.
+// instead i outputted the state on instructions not in the hot loop to see if i could see a pattern
+// i noticed that register[0] was sum of common divisors
 func run(register []int) {
 	instructions := buildInstructionMap()
 	program, ipRegister := parseInput(instructions)
-	programHitCount := make([]int, len(program), len(program))
 	hotLoopPrint := 0
 	ip := 0
-	// reg4 := 0
 	for {
 		register[ipRegister] = ip
 
-		// if ip == 9 && register[2] < register[4] {
-		// 	//shortcut!
-		// 	register[2] = register[4] + 1
-		// 	register[1] = 1
-		// } else if ip == 13 && register[5] < register[4] {
-		// 	register[1] = 1
-		// 	register[5] = register[4] + 1
-		// } else
-		if ip < len(program) && ip >= 0 {
-			programHitCount[ip]++
+		if ip == 3 {
+			divisors := getCommonDivisors(register[4])
+			dSum := 0
+			for _, i := range divisors {
+				dSum += i
+			}
+			fmt.Println(dSum)
+			return
+		} else if ip < len(program) && ip >= 0 {
 			inst := program[ip]
 			inst.i(register, inst.a, inst.b, inst.c)
 		} else {
 			break
 		}
+		if ip != 3 && ip != 4 && ip != 5 && ip != 6 && ip != 8 && ip != 9 && ip != 10 && ip != 11 {
+			// print out all out of sequence instructions (the hot loop consists of 3,4,5,6,8,9,10,11)
+			// this will remove a lot of cruft from the output and give us a better view of how the program runs.
+			//fmt.Printf("%v\t%v\t%v\n", hotLoopPrint, ip, register)
+		}
 		ip = register[ipRegister]
 		ip++
-		// if register[4] != reg4 {
-		// 	fmt.Printf("%v %v %v\n", hotLoopPrint, register, programHitCount)
-		// 	reg4 = register[4]
-		// }
-		fmt.Printf("%v %v %v\n", hotLoopPrint, register, programHitCount)
 		hotLoopPrint++
-		// if hotLoopPrint < 253234000 && hotLoopPrint > 253233000 {
-		// 	fmt.Printf("%v %v\n", register, programHitCount)
-		// 	//hotLoopPrint = 0
-		// }
 	}
 	fmt.Println(register[0])
+}
+
+func getCommonDivisors(x int) []int {
+	var divisors []int
+	sqrt := int(math.Sqrt(float64(x))) + 1
+
+	for i := 1; i < sqrt; i++ {
+		if x%i == 0 && i*i != x {
+			divisors = append(divisors, i, x/i)
+		} else if x%i == 0 && i*i == x {
+			divisors = append(divisors, i)
+		}
+	}
+	return divisors
 }
 
 type instruction struct {
