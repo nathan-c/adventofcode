@@ -218,7 +218,7 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPathLength int, 
 				target = tu
 				targetLocation = tl
 				targetOpenSquare = openSquare
-				firstStep = *step
+				firstStep = step
 			} else if pathLength == shortestPathLength {
 				if openSquare == targetOpenSquare {
 					if tu.hp < target.hp {
@@ -228,7 +228,7 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPathLength int, 
 					if step.Less(firstStep) {
 						// If multiple steps would put the unit equally closer to the same target square,
 						// the unit chooses the step which is first in reading order.
-						firstStep = *step
+						firstStep = step
 					}
 				} else if openSquare.Less(targetOpenSquare) {
 					// If multiple squares are in range and tied for being reachable in the fewest steps,
@@ -236,7 +236,7 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPathLength int, 
 					target = tu
 					targetLocation = tl
 					targetOpenSquare = openSquare
-					firstStep = *step
+					firstStep = step
 				}
 			}
 		}

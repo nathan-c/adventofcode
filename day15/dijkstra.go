@@ -19,46 +19,20 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
-type node struct {
-	key  location
-	cost int
-}
-
-type linkedList struct {
-	head   *linkedListNode
-	tail   *linkedListNode
-	length int
-}
-
-type linkedListNode struct {
-	value location
-	next  *linkedListNode
-}
-
-func (l *linkedList) clone() *linkedList {
-	return &linkedList{l.head, l.tail, l.length}
-}
-
-func (l *linkedListNode) pushHead(value location) *linkedListNode {
-	return &linkedListNode{
-		value: value,
-		next:  l,
-	}
-}
-
-func getFirstStep(previous map[location][]*location, start, end *location) *location {
-	var firstStep *location
-	if parents, ok := previous[*end]; ok {
+func getFirstStep(previous map[location][]location, start, end location) location {
+	firstStep := location{math.MaxInt64, math.MaxInt64}
+	if parents, ok := previous[end]; ok {
 		for _, parent := range parents {
-			if *parent == *start {
-				if firstStep == nil || end.Less(*firstStep) {
+			if parent == start {
+				if end.Less(firstStep) {
 					firstStep = end
 				}
 			} else {
 				step := getFirstStep(previous, start, parent)
-				if firstStep == nil || step.Less(*firstStep) {
+				if step.Less(firstStep) {
 					firstStep = step
 				}
 			}
@@ -69,11 +43,11 @@ func getFirstStep(previous map[location][]*location, start, end *location) *loca
 
 // Path finds the shortest paths between start and target.
 // When multiple shortest paths have same cost they are all returned
-func (u unitMap) shortestPath(start, target location) (firstStep *location, pathLength int) {
+func (u unitMap) shortestPath(start, target location) (firstStep location, pathLength int) {
 
-	explored := make(map[location]bool)        // set of nodes we already explored
-	frontier := newQueue()                     // queue of the nodes to explore
-	previous := make(map[location][]*location) // previously visited nodes (with equal cost)
+	explored := make(map[location]bool)       // set of nodes we already explored
+	frontier := newQueue()                    // queue of the nodes to explore
+	previous := make(map[location][]location) // previously visited nodes (with equal cost)
 
 	// add starting point to the frontier as it'll be the first node visited
 	frontier.Push(start, 0)
@@ -82,25 +56,24 @@ func (u unitMap) shortestPath(start, target location) (firstStep *location, path
 	for frontier.Len() > 0 {
 		// get the node in the frontier with the lowest cost (or priority)
 		aKey, aPriority := frontier.Pop()
-		n := node{aKey, aPriority}
 
 		// when the node with the lowest cost in the frontier is target, we can
 		// compute the cost and path and exit the loop
-		if n.key == target {
-			pathLength = n.cost
-			firstStep = getFirstStep(previous, &start, &n.key)
+		if aKey == target {
+			pathLength = aPriority
+			firstStep = getFirstStep(previous, start, aKey)
 			return
 		}
 
 		// add the current node to the explored set
-		explored[n.key] = true
+		explored[aKey] = true
 
-		if n.key.x == 13 && n.key.y == 6 {
+		if aKey.x == 13 && aKey.y == 6 {
 			fmt.Print()
 		}
 
 		// loop all the neighboring nodes
-		for _, nKey := range u.openSquaresInRangeOf(n.key) {
+		for _, nKey := range u.openSquaresInRangeOf(aKey) {
 
 			// skip already-explored nodes
 			if explored[nKey] {
@@ -109,21 +82,23 @@ func (u unitMap) shortestPath(start, target location) (firstStep *location, path
 
 			// if the node is not yet in the frontier add it with the cost
 			if _, ok := frontier.Contains(nKey); !ok {
-				previous[nKey] = []*location{&n.key}
-				frontier.Push(nKey, n.cost+1)
+				locs := make([]location, 1, 4)
+				locs[0] = aKey
+				previous[nKey] = locs
+				frontier.Push(nKey, aPriority+1)
 				continue
 			}
 
 			frontierCost, _ := frontier.Contains(nKey)
-			nodeCost := n.cost + 1
+			nodeCost := aPriority + 1
 
 			// only update the cost of this node in the frontier when
 			// it's below what's currently set or cost is equal
 			if nodeCost < frontierCost {
-				previous[nKey] = []*location{&n.key}
+				previous[nKey] = []location{aKey}
 				frontier.Push(nKey, nodeCost)
 			} else if nodeCost == frontierCost {
-				previous[nKey] = append(previous[nKey], &n.key)
+				previous[nKey] = append(previous[nKey], aKey)
 				frontier.Push(nKey, nodeCost)
 			}
 		}
