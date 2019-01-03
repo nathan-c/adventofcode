@@ -17,7 +17,9 @@ Borrowed and tweaked this implementation from https://github.com/albertorestifo/
 */
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type node struct {
 	key  location
@@ -46,13 +48,32 @@ func (l *linkedListNode) pushHead(value location) *linkedListNode {
 	}
 }
 
+func getFirstStep(previous map[location][]*location, start, end *location) *location {
+	var firstStep *location
+	if parents, ok := previous[*end]; ok {
+		for _, parent := range parents {
+			if *parent == *start {
+				if firstStep == nil || end.Less(*firstStep) {
+					firstStep = end
+				}
+			} else {
+				step := getFirstStep(previous, start, parent)
+				if firstStep == nil || step.Less(*firstStep) {
+					firstStep = step
+				}
+			}
+		}
+	}
+	return firstStep
+}
+
 // Path finds the shortest paths between start and target.
 // When multiple shortest paths have same cost they are all returned
-func (u unitMap) shortestPath(start, target location) (firstStep location, pathLength int) {
+func (u unitMap) shortestPath(start, target location) (firstStep *location, pathLength int) {
 
-	explored := make(map[location]bool)       // set of nodes we already explored
-	frontier := newQueue()                    // queue of the nodes to explore
-	previous := make(map[location][]location) // previously visited nodes (with equal cost)
+	explored := make(map[location]bool)        // set of nodes we already explored
+	frontier := newQueue()                     // queue of the nodes to explore
+	previous := make(map[location][]*location) // previously visited nodes (with equal cost)
 
 	// add starting point to the frontier as it'll be the first node visited
 	frontier.Push(start, 0)
@@ -66,44 +87,8 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 		// when the node with the lowest cost in the frontier is target, we can
 		// compute the cost and path and exit the loop
 		if n.key == target {
-			var l *linkedListNode
-			l = l.pushHead(n.key)
-			visited := []*linkedListNode{l}
-			for len(visited) > 0 {
-				path := visited[0]
-				visited = visited[1:]
-
-				head := path.value
-
-				if head == start {
-					length := 0
-					node := path
-					for node != nil {
-						length++
-						node = node.next
-					}
-
-					pathSlice := make([]location, length)
-					// reverse the path because it was popilated
-					// in reverse, form target to start
-					node = path
-					for i := 0; i < length; i++ {
-						pathSlice[i] = node.value
-						node = node.next
-					}
-
-					if len(pathSlice) >= dist(start, target) {
-						paths = append(paths, pathSlice)
-					}
-
-				} else {
-					if parents, ok := previous[head]; ok {
-						for _, parent := range parents {
-							visited = append(visited, path.pushHead(parent))
-						}
-					}
-				}
-			}
+			pathLength = n.cost
+			firstStep = getFirstStep(previous, &start, &n.key)
 			return
 		}
 
@@ -124,7 +109,7 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 
 			// if the node is not yet in the frontier add it with the cost
 			if _, ok := frontier.Contains(nKey); !ok {
-				previous[nKey] = []location{n.key}
+				previous[nKey] = []*location{&n.key}
 				frontier.Push(nKey, n.cost+1)
 				continue
 			}
@@ -135,10 +120,10 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 			// only update the cost of this node in the frontier when
 			// it's below what's currently set or cost is equal
 			if nodeCost < frontierCost {
-				previous[nKey] = []location{n.key}
+				previous[nKey] = []*location{&n.key}
 				frontier.Push(nKey, nodeCost)
 			} else if nodeCost == frontierCost {
-				previous[nKey] = append(previous[nKey], n.key)
+				previous[nKey] = append(previous[nKey], &n.key)
 				frontier.Push(nKey, nodeCost)
 			}
 		}

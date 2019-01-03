@@ -41,8 +41,8 @@ func (m unitMap) openSquaresInRangeOf(l location) []location {
 	return openSquares
 }
 
-func (m unitMap) attack(l location, u *unit) (killed bool) {
-	u.hp -= 3
+func (m unitMap) attack(l location, u *unit, power int) (killed bool) {
+	u.hp -= power
 	if u.hp < 1 {
 		delete(m, l)
 		return true

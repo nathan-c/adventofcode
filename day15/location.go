@@ -12,10 +12,8 @@ func newLocation(x, y int) location {
 func (l location) Less(other location) bool {
 	if l.y < other.y {
 		return true
-	} else if l.y == other.y {
-		if l.x < other.x {
-			return true
-		}
+	} else if l.y == other.y && l.x < other.x {
+		return true
 	}
 	return false
 }

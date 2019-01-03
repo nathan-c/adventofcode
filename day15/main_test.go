@@ -24,6 +24,7 @@ import (
 // 		{"gt3", args{location{2, 3}, location{2, 1}}, false},
 // 		{"gt4", args{location{2, 3}, location{1, 2}}, false},
 // 		{"gt5", args{location{2, 3}, location{3, 2}}, false},
+// 		{"eq", args{location{2, 3}, location{2, 3}}, false},
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
@@ -40,16 +41,16 @@ func Test_part1(t *testing.T) {
 		args        string
 		wantOutcome int
 	}{
-		{"test1", "test1.txt", 27730},
-		{"test2", "test2.txt", 36334},
-		{"test3", "test3.txt", 39514},
-		{"test4", "test4.txt", 27755},
-		{"test5", "test5.txt", 28944},
-		{"test6", "test6.txt", 18740},
+		//{"test1", "test1.txt", 27730},
+		//{"test2", "test2.txt", 36334},
+		//{"test3", "test3.txt", 39514},
+		//{"test4", "test4.txt", 27755},
+		//{"test5", "test5.txt", 28944},
+		//{"test6", "test6.txt", 18740},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u, l := parseInput(tt.args)
+			u, l := parseInput(tt.args, 3)
 			if gotOutcome := part1(u, l); gotOutcome != tt.wantOutcome {
 				t.Errorf("part1() = %v, want %v", gotOutcome, tt.wantOutcome)
 			}
@@ -58,7 +59,7 @@ func Test_part1(t *testing.T) {
 }
 
 func Benchmark_runTurn(b *testing.B) {
-	m, l := parseInput("input.txt")
+	m, l := parseInput("input.txt", 3)
 	for n := 0; n < b.N; n++ {
 		runTurn(m, l)
 	}

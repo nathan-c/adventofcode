@@ -400,12 +400,12 @@ if __name__=="__main__":
     for row in data.split("\n"):
         print(row)
 
-    assert problem1(t0)==27730
-    assert problem1(t1)==36334
-    assert problem1(t2)==39514
-    assert problem1(t3)==27755
-    assert problem1(t4)==28944
-    assert problem1(t5)==18740
+    # assert problem1(t0)==27730
+    # assert problem1(t1)==36334
+    #assert problem1(t2,True)==39514
+    # assert problem1(t3)==27755
+    # assert problem1(t4)==28944
+    # assert problem1(t5)==18740
 
-    print(problem1(data,True))
+    print(problem1(data,False))
     #print(problem2(data))

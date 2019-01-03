@@ -17,28 +17,29 @@ var (
 )
 
 type unit struct {
-	t  unitType
-	hp int
+	t   unitType
+	hp  int
+	pow int
 }
 
 func main() {
-	m, l := parseInput("input.txt")
+	m, l := parseInput("input.txt", 3)
 	fmt.Println(m)
 
 	part1(m, l)
-
+	//part2(4)
 }
 
 func part1(units unitMap, max location) (outcome int) {
 	i := 0
-	// fmt.Println(i)
-	// fmt.Println(units)
+	fmt.Println(i)
+	fmt.Println(units)
 
 	for !runTurn(units, max) {
 		i++
 		// if i%10 == 0 {
-		fmt.Println(i)
-		fmt.Print(units)
+		// fmt.Println(i)
+		// fmt.Print(units)
 
 		// }
 	}
@@ -54,6 +55,38 @@ func part1(units unitMap, max location) (outcome int) {
 	return hpSum * i
 }
 
+func part2(pow int) (outcome int) {
+	units, max := parseInput("input.txt", pow)
+	i := 0
+	fmt.Println(i)
+	fmt.Println(units)
+
+	for {
+		elfDied, gameOver := runTurnPart2(units, max)
+		if elfDied {
+			return part2(pow + 1)
+		}
+		if gameOver {
+			break
+		}
+		// if i%10 == 0 {
+		// fmt.Println(i)
+		// fmt.Print(units)
+
+		// }
+	}
+
+	fmt.Println(units)
+	hpSum := 0
+	for _, u := range units {
+		if u.t != wall {
+			hpSum += u.hp
+		}
+	}
+	fmt.Printf("Outcome (elf strength) %v: %v * %v = %v\n", pow, i, hpSum, hpSum*i)
+	return hpSum * i
+}
+
 func runTurn(units unitMap, max location) (gameOver bool) {
 	moved := make(map[*unit]struct{})
 
@@ -65,7 +98,7 @@ func runTurn(units unitMap, max location) (gameOver bool) {
 					continue
 				}
 
-				shortestPath, targetLoc, target, gameOver := findTarget(units, l, unit)
+				shortestPathLength, nextStepLocation, targetLoc, target, gameOver := findTarget(units, l, unit)
 
 				if gameOver {
 					return true
@@ -75,13 +108,13 @@ func runTurn(units unitMap, max location) (gameOver bool) {
 					continue
 				}
 
-				if len(shortestPath) == 0 {
-					units.attack(targetLoc, target)
+				if shortestPathLength == 0 {
+					units.attack(targetLoc, target, 3)
 				} else {
 					delete(units, l)
-					units[shortestPath[1]] = unit
-					if len(shortestPath) == 2 {
-						units.attack(targetLoc, target)
+					units[nextStepLocation] = unit
+					if shortestPathLength == 1 {
+						units.attack(targetLoc, target, 3)
 					}
 				}
 				// mark unit as moved if a unit has moved OR attacked
@@ -93,13 +126,58 @@ func runTurn(units unitMap, max location) (gameOver bool) {
 	return false
 }
 
-func findTarget(units unitMap, l location, unit *unit) (shortestPath []location, targetLocation location, target *unit, gameOver bool) {
+func runTurnPart2(units unitMap, max location) (elfDied bool, gameOver bool) {
+	moved := make(map[*unit]struct{})
+
+	for y := 0; y <= max.y; y++ {
+		for x := 0; x <= max.x; x++ {
+			l := newLocation(x, y)
+			if unit, ok := units[l]; ok && (unit.t == elf || unit.t == goblin) {
+				if _, ok := moved[unit]; ok {
+					continue
+				}
+
+				shortestPathLength, nextStepLocation, targetLoc, target, gameOver := findTarget(units, l, unit)
+
+				if gameOver {
+					return false, true
+				}
+
+				if target == nil {
+					continue
+				}
+
+				if shortestPathLength == 0 {
+					killed := units.attack(targetLoc, target, unit.pow)
+					if killed && target.t == elf {
+						return true, false
+					}
+				} else {
+					delete(units, l)
+					units[nextStepLocation] = unit
+					if shortestPathLength == 1 {
+						killed := units.attack(targetLoc, target, unit.pow)
+						if killed && target.t == elf {
+							return true, false
+						}
+					}
+				}
+				// mark unit as moved if a unit has moved OR attacked
+				moved[unit] = struct{}{}
+			}
+		}
+	}
+
+	return false, false
+}
+
+func findTarget(units unitMap, l location, unit *unit) (shortestPathLength int, firstStep location, targetLocation location, target *unit, gameOver bool) {
 	// Each unit begins its turn by identifying all possible targets (enemy units).
 	// If no targets remain, combat ends.
 	ts := units.findTargets(unit)
 
 	if len(ts) == 0 {
-		return nil, newLocation(0, 0), nil, true
+		return 0, newLocation(0, 0), newLocation(0, 0), nil, true
 	}
 
 	for tl, tu := range ts {
@@ -118,6 +196,7 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPath []location,
 	if target != nil {
 		return
 	}
+	var targetOpenSquare location
 
 	for tl, tu := range ts {
 		// Otherwise, since it is not in range of a target, it moves.
@@ -129,34 +208,35 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPath []location,
 		for _, openSquare := range openSquares {
 			// the unit first considers the squares that are in range
 			// and determines which of those squares it could reach in the fewest steps.
-			paths := units.shortestPath(l, openSquare)
-			if len(paths) < 1 {
+			step, pathLength := units.shortestPath(l, openSquare)
+			if pathLength == 0 {
 				continue
 			}
 
-			for _, p := range paths {
-				if shortestPath == nil || len(p) < len(shortestPath) {
-					shortestPath = p
-					target = tu
-					targetLocation = tl
-				} else if len(p) == len(shortestPath) {
-					if p[len(p)-1] == shortestPath[len(shortestPath)-1] {
-						if tu.hp < target.hp {
-							target = tu
-							targetLocation = tl
-						}
-						if p[1].Less(shortestPath[1]) {
-							// If multiple steps would put the unit equally closer to the same target square,
-							// the unit chooses the step which is first in reading order.
-							shortestPath = p
-						}
-					} else if p[len(p)-1].Less(shortestPath[len(shortestPath)-1]) {
-						// If multiple squares are in range and tied for being reachable in the fewest steps,
-						// the square which is first in reading order is chosen.
-						shortestPath = p
+			if target == nil || pathLength < shortestPathLength {
+				shortestPathLength = pathLength
+				target = tu
+				targetLocation = tl
+				targetOpenSquare = openSquare
+				firstStep = *step
+			} else if pathLength == shortestPathLength {
+				if openSquare == targetOpenSquare {
+					if tu.hp < target.hp {
 						target = tu
 						targetLocation = tl
 					}
+					if step.Less(firstStep) {
+						// If multiple steps would put the unit equally closer to the same target square,
+						// the unit chooses the step which is first in reading order.
+						firstStep = *step
+					}
+				} else if openSquare.Less(targetOpenSquare) {
+					// If multiple squares are in range and tied for being reachable in the fewest steps,
+					// the square which is first in reading order is chosen.
+					target = tu
+					targetLocation = tl
+					targetOpenSquare = openSquare
+					firstStep = *step
 				}
 			}
 		}
@@ -166,7 +246,7 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPath []location,
 	return
 }
 
-func parseInput(fileName string) (unitMap, location) {
+func parseInput(fileName string, pow int) (unitMap, location) {
 	f, err := os.Open(fileName)
 	if err != nil {
 		log.Panicf("could not open file. %v", err)
@@ -182,7 +262,7 @@ func parseInput(fileName string) (unitMap, location) {
 			if unitType(ut) == cavern {
 				continue
 			}
-			u := &unit{unitType(ut), 200}
+			u := &unit{unitType(ut), 200, pow}
 			units[newLocation(x, y)] = u
 			if x > maxx {
 				maxx = x
