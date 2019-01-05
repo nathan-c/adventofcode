@@ -24,6 +24,19 @@ func (m unitMap) findTargets(u *unit) unitMap {
 	return targets
 }
 
+func (m unitMap) hasTargets(u *unit) bool {
+	targetType := u.t.getEnemy()
+	for _, v := range m {
+		if v == u {
+			continue
+		}
+		if v.t == targetType {
+			return true
+		}
+	}
+	return false
+}
+
 func (m unitMap) openSquaresInRangeOf(l location) []location {
 	openSquares := make([]location, 0, 4)
 
@@ -33,9 +46,9 @@ func (m unitMap) openSquaresInRangeOf(l location) []location {
 		}
 	}
 
+	check(newLocation(l.x, l.y-1))
 	check(newLocation(l.x-1, l.y))
 	check(newLocation(l.x+1, l.y))
-	check(newLocation(l.x, l.y-1))
 	check(newLocation(l.x, l.y+1))
 
 	return openSquares
@@ -116,26 +129,20 @@ func (m unitMap) isInRange(l location, t unitType) bool {
 	return false
 }
 
-func (m unitMap) inRange(l location, t unitType) (location, *unit) {
+func (m unitMap) inRange(l location, t unitType) (tl location, tu *unit) {
 
-	test := func(l location) (location, *unit) {
+	test := func(l location) {
 		if u, ok := m[l]; ok && u.t == t {
-			return l, u
+			if tu == nil || tu.hp > u.hp {
+				tu = u
+				tl = l
+			}
 		}
-		return l, nil
 	}
 
-	if l, u := test(location{l.x, l.y - 1}); u != nil {
-		return l, u
-	}
-	if l, u := test(location{l.x - 1, l.y}); u != nil {
-		return l, u
-	}
-	if l, u := test(location{l.x + 1, l.y}); u != nil {
-		return l, u
-	}
-	if l, u := test(location{l.x, l.y + 1}); u != nil {
-		return l, u
-	}
-	return location{}, nil
+	test(location{l.x, l.y - 1})
+	test(location{l.x - 1, l.y})
+	test(location{l.x + 1, l.y})
+	test(location{l.x, l.y + 1})
+	return
 }

@@ -58,6 +58,33 @@ func Test_part1(t *testing.T) {
 	}
 }
 
+func Test_part2(t *testing.T) {
+	tests := []struct {
+		fileName    string
+		wantOutcome int
+	}{
+		{"input.txt", 41972},
+		{"test1.txt", 4988},
+		{"test3.txt", 31284},
+		{"test4.txt", 3478},
+		{"test5.txt", 6474},
+		{"test6.txt", 1140},
+	}
+	for _, tt := range tests {
+		t.Run(tt.fileName, func(t *testing.T) {
+			if gotOutcome := part2(tt.fileName, 4); gotOutcome != tt.wantOutcome {
+				t.Errorf("part2() = %v, want %v", gotOutcome, tt.wantOutcome)
+			}
+		})
+	}
+}
+
+type test struct {
+	i    int
+	in   input
+	oout output
+}
+
 func Benchmark_runTurn(b *testing.B) {
 	m, l := parseInput("input.txt", 3)
 	for n := 0; n < b.N; n++ {

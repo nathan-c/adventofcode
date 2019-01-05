@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 type unitType rune
@@ -16,6 +18,17 @@ var (
 	cavern unitType = '.'
 )
 
+func (t unitType) getEnemy() unitType {
+	switch t {
+	case elf:
+		return goblin
+	case goblin:
+		return elf
+	default:
+		panic(fmt.Sprintf("unsupported unit %v!", t))
+	}
+}
+
 type unit struct {
 	t   unitType
 	hp  int
@@ -23,11 +36,11 @@ type unit struct {
 }
 
 func main() {
-	// m, l := parseInput("input.txt", 3)
-	// fmt.Println(m)
+	m, l := parseInput("input.txt", 3)
+	fmt.Println(m)
 
-	//part1(m, l)
-	part2(4)
+	part1(m, l)
+	part2("input.txt", 4)
 }
 
 func part1(units unitMap, max location) (outcome int) {
@@ -35,7 +48,7 @@ func part1(units unitMap, max location) (outcome int) {
 	fmt.Println(i)
 	fmt.Println(units)
 
-	for !runTurn(units, max) {
+	for !runTurnPart1(units, max) {
 		i++
 		// if i%10 == 0 {
 		// fmt.Println(i)
@@ -55,19 +68,20 @@ func part1(units unitMap, max location) (outcome int) {
 	return hpSum * i
 }
 
-func part2(pow int) (outcome int) {
-	units, max := parseInput("input.txt", pow)
+func part2(fileName string, pow int) (outcome int) {
+	units, max := parseInput(fileName, pow)
 	i := 0
-	fmt.Println(pow)
+	//fmt.Println(pow)
 	// fmt.Println(units)
-
-	for {
-		elfDied, gameOver := runTurnPart2(units, max)
+	gameOver := false
+	for !gameOver {
+		var elfDied bool
+		elfDied, gameOver = runTurnPart2(units, max)
 		if elfDied {
-			return part2(pow + 1)
+			return part2(fileName, pow+1)
 		}
-		if gameOver {
-			break
+		if !gameOver {
+			i++
 		}
 		// if i%10 == 0 {
 		// fmt.Println(i)
@@ -126,6 +140,42 @@ func runTurn(units unitMap, max location) (gameOver bool) {
 	return false
 }
 
+func runTurnPart1(units unitMap, max location) (gameOver bool) {
+	moved := make(map[*unit]struct{})
+
+	for y := 0; y <= max.y; y++ {
+		for x := 0; x <= max.x; x++ {
+			l := newLocation(x, y)
+			if unit, ok := units[l]; ok && (unit.t == elf || unit.t == goblin) {
+				if _, ok := moved[unit]; ok {
+					continue
+				}
+
+				if !units.hasTargets(unit) {
+					return true
+				}
+
+				step, ok := bfsMove(units, l, unit.t.getEnemy())
+
+				if ok {
+					units[step] = units[l]
+
+					delete(units, l)
+				}
+
+				loc, target := units.inRange(step, unit.t.getEnemy())
+				if target != nil {
+					units.attack(loc, target, unit.pow)
+				}
+
+				moved[unit] = struct{}{}
+			}
+		}
+	}
+
+	return false
+}
+
 func runTurnPart2(units unitMap, max location) (elfDied bool, gameOver bool) {
 	moved := make(map[*unit]struct{})
 
@@ -137,14 +187,11 @@ func runTurnPart2(units unitMap, max location) (elfDied bool, gameOver bool) {
 					continue
 				}
 
-				var enemyType unitType
-				if unit.t == elf {
-					enemyType = goblin
-				} else {
-					enemyType = elf
+				if !units.hasTargets(unit) {
+					return false, true
 				}
 
-				step, ok := bfs_move(units, l, enemyType)
+				step, ok := bfsMove(units, l, unit.t.getEnemy())
 
 				if ok {
 					units[step] = units[l]
@@ -152,7 +199,7 @@ func runTurnPart2(units unitMap, max location) (elfDied bool, gameOver bool) {
 					delete(units, l)
 				}
 
-				loc, target := units.inRange(step, enemyType)
+				loc, target := units.inRange(step, unit.t.getEnemy())
 				if target != nil {
 					killed := units.attack(loc, target, unit.pow)
 					if killed && target.t == elf {
@@ -250,7 +297,15 @@ func parseInput(fileName string, pow int) (unitMap, location) {
 		log.Panicf("could not open file. %v", err)
 	}
 	defer f.Close()
-	scanner := bufio.NewScanner(f)
+	return parseInputFromReader(f, pow)
+}
+
+func parseInputFromString(x string, pow int) (unitMap, location) {
+	return parseInputFromReader(strings.NewReader(x), pow)
+}
+
+func parseInputFromReader(r io.Reader, pow int) (unitMap, location) {
+	scanner := bufio.NewScanner(r)
 	units := make(unitMap)
 	y := 0
 	maxx := 0
@@ -260,7 +315,12 @@ func parseInput(fileName string, pow int) (unitMap, location) {
 			if unitType(ut) == cavern {
 				continue
 			}
-			u := &unit{unitType(ut), 200, pow}
+			var u *unit
+			if unitType(ut) == elf {
+				u = &unit{unitType(ut), 200, pow}
+			} else {
+				u = &unit{unitType(ut), 200, 3}
+			}
 			units[newLocation(x, y)] = u
 			if x > maxx {
 				maxx = x

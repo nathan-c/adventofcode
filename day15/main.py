@@ -408,5 +408,5 @@ if __name__=="__main__":
     # assert problem1(t4)==28944
     # assert problem1(t5)==18740
 
-    #print(problem1(data,False))
+    print(problem1(data,False))
     print(problem2(data))
