@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func Test_part1(t *testing.T) {
 	tests := []struct {
@@ -14,6 +16,25 @@ func Test_part1(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := part1(tt.args); got != tt.want {
 				t.Errorf("part1() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_part2(t *testing.T) {
+	tests := []struct {
+		name      string
+		bots      []nanoBot
+		wantDist  int
+		wantCount int
+	}{
+		{"example", readInput("test2.txt"), 36, 5},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotDist, gotCount := part2(tt.bots)
+			if gotDist != tt.wantDist || gotCount != tt.wantCount {
+				t.Errorf("part2() = %v, %v, want %v, %v", gotDist, gotCount, tt.wantDist, tt.wantCount)
 			}
 		})
 	}
