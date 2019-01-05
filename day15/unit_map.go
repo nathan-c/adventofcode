@@ -93,3 +93,49 @@ func (m unitMap) String() string {
 	}
 	return sb.String()
 }
+
+func (m unitMap) isInRange(l location, t unitType) bool {
+
+	test := func(l location) bool {
+		u, ok := m[l]
+		return ok && u.t == t
+	}
+
+	if test(location{l.x - 1, l.y}) {
+		return true
+	}
+	if test(location{l.x + 1, l.y}) {
+		return true
+	}
+	if test(location{l.x, l.y - 1}) {
+		return true
+	}
+	if test(location{l.x, l.y + 1}) {
+		return true
+	}
+	return false
+}
+
+func (m unitMap) inRange(l location, t unitType) (location, *unit) {
+
+	test := func(l location) (location, *unit) {
+		if u, ok := m[l]; ok && u.t == t {
+			return l, u
+		}
+		return l, nil
+	}
+
+	if l, u := test(location{l.x, l.y - 1}); u != nil {
+		return l, u
+	}
+	if l, u := test(location{l.x - 1, l.y}); u != nil {
+		return l, u
+	}
+	if l, u := test(location{l.x + 1, l.y}); u != nil {
+		return l, u
+	}
+	if l, u := test(location{l.x, l.y + 1}); u != nil {
+		return l, u
+	}
+	return location{}, nil
+}

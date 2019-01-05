@@ -41,12 +41,12 @@ func Test_part1(t *testing.T) {
 		args        string
 		wantOutcome int
 	}{
-		//{"test1", "test1.txt", 27730},
-		//{"test2", "test2.txt", 36334},
-		//{"test3", "test3.txt", 39514},
-		//{"test4", "test4.txt", 27755},
-		//{"test5", "test5.txt", 28944},
-		//{"test6", "test6.txt", 18740},
+		{"test1", "test1.txt", 27730},
+		{"test2", "test2.txt", 36334},
+		{"test3", "test3.txt", 39514},
+		{"test4", "test4.txt", 27755},
+		{"test5", "test5.txt", 28944},
+		{"test6", "test6.txt", 18740},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

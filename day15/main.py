@@ -391,6 +391,7 @@ def problem2(inp, print_=False):
     while not score:
         damage_dict["E"] += 1
         score = problem2_loop(inp, damage_dict, print_)
+    print(damage_dict)
     return score
 
 if __name__=="__main__":
@@ -407,5 +408,5 @@ if __name__=="__main__":
     # assert problem1(t4)==28944
     # assert problem1(t5)==18740
 
-    print(problem1(data,False))
-    #print(problem2(data))
+    #print(problem1(data,False))
+    print(problem2(data))

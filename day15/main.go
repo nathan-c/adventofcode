@@ -23,11 +23,11 @@ type unit struct {
 }
 
 func main() {
-	m, l := parseInput("input.txt", 3)
-	fmt.Println(m)
+	// m, l := parseInput("input.txt", 3)
+	// fmt.Println(m)
 
-	part1(m, l)
-	//part2(4)
+	//part1(m, l)
+	part2(4)
 }
 
 func part1(units unitMap, max location) (outcome int) {
@@ -58,8 +58,8 @@ func part1(units unitMap, max location) (outcome int) {
 func part2(pow int) (outcome int) {
 	units, max := parseInput("input.txt", pow)
 	i := 0
-	fmt.Println(i)
-	fmt.Println(units)
+	fmt.Println(pow)
+	// fmt.Println(units)
 
 	for {
 		elfDied, gameOver := runTurnPart2(units, max)
@@ -98,7 +98,7 @@ func runTurn(units unitMap, max location) (gameOver bool) {
 					continue
 				}
 
-				shortestPathLength, nextStepLocation, targetLoc, target, gameOver := findTarget(units, l, unit)
+				shortestPathLength, nextStepLocation, targetLoc, target, gameOver := findTarget(units, max, l, unit)
 
 				if gameOver {
 					return true
@@ -137,32 +137,29 @@ func runTurnPart2(units unitMap, max location) (elfDied bool, gameOver bool) {
 					continue
 				}
 
-				shortestPathLength, nextStepLocation, targetLoc, target, gameOver := findTarget(units, l, unit)
-
-				if gameOver {
-					return false, true
+				var enemyType unitType
+				if unit.t == elf {
+					enemyType = goblin
+				} else {
+					enemyType = elf
 				}
 
-				if target == nil {
-					continue
+				step, ok := bfs_move(units, l, enemyType)
+
+				if ok {
+					units[step] = units[l]
+
+					delete(units, l)
 				}
 
-				if shortestPathLength == 0 {
-					killed := units.attack(targetLoc, target, unit.pow)
+				loc, target := units.inRange(step, enemyType)
+				if target != nil {
+					killed := units.attack(loc, target, unit.pow)
 					if killed && target.t == elf {
 						return true, false
 					}
-				} else {
-					delete(units, l)
-					units[nextStepLocation] = unit
-					if shortestPathLength == 1 {
-						killed := units.attack(targetLoc, target, unit.pow)
-						if killed && target.t == elf {
-							return true, false
-						}
-					}
 				}
-				// mark unit as moved if a unit has moved OR attacked
+
 				moved[unit] = struct{}{}
 			}
 		}
@@ -171,7 +168,7 @@ func runTurnPart2(units unitMap, max location) (elfDied bool, gameOver bool) {
 	return false, false
 }
 
-func findTarget(units unitMap, l location, unit *unit) (shortestPathLength int, firstStep location, targetLocation location, target *unit, gameOver bool) {
+func findTarget(units unitMap, max, l location, unit *unit) (shortestPathLength int, firstStep location, targetLocation location, target *unit, gameOver bool) {
 	// Each unit begins its turn by identifying all possible targets (enemy units).
 	// If no targets remain, combat ends.
 	ts := units.findTargets(unit)
@@ -208,7 +205,8 @@ func findTarget(units unitMap, l location, unit *unit) (shortestPathLength int, 
 		for _, openSquare := range openSquares {
 			// the unit first considers the squares that are in range
 			// and determines which of those squares it could reach in the fewest steps.
-			step, pathLength := units.shortestPath(l, openSquare)
+
+			step, pathLength := units.shortestPath(l, openSquare, max)
 			if pathLength == 0 {
 				continue
 			}

@@ -20,11 +20,61 @@ package main
 import (
 	"fmt"
 	"math"
+	"strings"
 )
 
-func getFirstStep(previous map[location][]location, start, end location) location {
+type boolMatrix struct {
+	data []bool
+	w, h int
+}
+
+func newBoolMatrix(w, h int) boolMatrix {
+	return boolMatrix{data: make([]bool, w*h), w: w, h: h}
+}
+
+func (m boolMatrix) get(x, y int) bool {
+	return m.data[m.w*y+x]
+}
+
+func (m boolMatrix) set(x, y int, v bool) {
+	m.data[m.w*y+x] = v
+}
+
+func (m boolMatrix) String() string {
+	var sb strings.Builder
+	for y := 0; y < m.h; y++ {
+		for x := 0; x < m.w; x++ {
+			if m.get(x, y) {
+				sb.WriteRune('X')
+			} else {
+				sb.WriteRune('.')
+			}
+		}
+		sb.WriteRune('\n')
+	}
+	return sb.String()
+}
+
+type locationSliceMatrix struct {
+	data [][]location
+	w, h int
+}
+
+func newLocationSliceMatrix(w, h int) locationSliceMatrix {
+	return locationSliceMatrix{data: make([][]location, w*h), w: w, h: h}
+}
+
+func (m locationSliceMatrix) get(x, y int) []location {
+	return m.data[m.w*y+x]
+}
+
+func (m locationSliceMatrix) set(x, y int, v []location) {
+	m.data[m.w*y+x] = v
+}
+
+func getFirstStep(previous locationSliceMatrix, start, end location) location {
 	firstStep := location{math.MaxInt64, math.MaxInt64}
-	if parents, ok := previous[end]; ok {
+	if parents := previous.get(end.x, end.y); parents != nil {
 		for _, parent := range parents {
 			if parent == start {
 				if end.Less(firstStep) {
@@ -43,11 +93,11 @@ func getFirstStep(previous map[location][]location, start, end location) locatio
 
 // Path finds the shortest paths between start and target.
 // When multiple shortest paths have same cost they are all returned
-func (u unitMap) shortestPath(start, target location) (firstStep location, pathLength int) {
+func (u unitMap) shortestPath(start, target, max location) (firstStep location, pathLength int) {
 
-	explored := make(map[location]bool)       // set of nodes we already explored
-	frontier := newQueue()                    // queue of the nodes to explore
-	previous := make(map[location][]location) // previously visited nodes (with equal cost)
+	explored := newBoolMatrix(max.x, max.y)          // set of nodes we already explored
+	frontier := newQueue()                           // queue of the nodes to explore
+	previous := newLocationSliceMatrix(max.x, max.y) // previously visited nodes (with equal cost)
 
 	// add starting point to the frontier as it'll be the first node visited
 	frontier.Push(start, 0)
@@ -66,7 +116,7 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 		}
 
 		// add the current node to the explored set
-		explored[aKey] = true
+		explored.set(aKey.x, aKey.y, true)
 
 		if aKey.x == 13 && aKey.y == 6 {
 			fmt.Print()
@@ -76,7 +126,7 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 		for _, nKey := range u.openSquaresInRangeOf(aKey) {
 
 			// skip already-explored nodes
-			if explored[nKey] {
+			if explored.get(nKey.x, nKey.y) {
 				continue
 			}
 
@@ -84,7 +134,7 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 			if _, ok := frontier.Contains(nKey); !ok {
 				locs := make([]location, 1, 4)
 				locs[0] = aKey
-				previous[nKey] = locs
+				previous.set(nKey.x, nKey.y, locs)
 				frontier.Push(nKey, aPriority+1)
 				continue
 			}
@@ -95,10 +145,12 @@ func (u unitMap) shortestPath(start, target location) (firstStep location, pathL
 			// only update the cost of this node in the frontier when
 			// it's below what's currently set or cost is equal
 			if nodeCost < frontierCost {
-				previous[nKey] = []location{aKey}
+				locs := make([]location, 1, 4)
+				locs[0] = aKey
+				previous.set(nKey.x, nKey.y, locs)
 				frontier.Push(nKey, nodeCost)
 			} else if nodeCost == frontierCost {
-				previous[nKey] = append(previous[nKey], aKey)
+				previous.set(nKey.x, nKey.y, append(previous.get(nKey.x, nKey.y), aKey))
 				frontier.Push(nKey, nodeCost)
 			}
 		}
