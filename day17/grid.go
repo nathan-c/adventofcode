@@ -26,51 +26,64 @@ type location struct {
 type grid struct {
 	cells  map[location]cellType
 	spring location
+	top    int
+	bottom int
 }
 
-func newGrid(x, y int) grid {
+func newGrid(x, y int) *grid {
 	m := make(map[location]cellType)
 	m[location{x, y}] = waterSpring
-	return grid{m, location{x, y}}
+	return &grid{m, location{x, y}, math.MaxInt64, math.MinInt64}
 }
 
-func (g grid) get(x, y int) cellType {
+func (g *grid) get(x, y int) cellType {
 	if t, ok := g.cells[location{x, y}]; ok {
 		return t
 	}
 	return empty
 }
 
-func (g grid) set(x, y int, t cellType) {
+func (g *grid) set(x, y int, t cellType) {
 	g.cells[location{x, y}] = t
-}
 
-func (g grid) bottom() int {
-	maxy := math.MinInt32
-	for k := range g.cells {
-		if k.y > maxy {
-			maxy = k.y
+	if t == clay {
+		if y < g.top {
+			g.top = y
+		}
+		if y > g.bottom {
+			g.bottom = y
 		}
 	}
-	return maxy
 }
 
-func (g grid) isClayOrStanding(x, y int) bool {
+func (g *grid) isClayOrStanding(x, y int) bool {
 	t := g.get(x, y)
 	return t == clay || t == standingWater
 }
 
-func (g grid) countWater() int {
+func (g *grid) countWater() int {
+	miny := g.top
 	sum := 0
-	for _, v := range g.cells {
-		if v == standingWater || v == runningWater {
+	for l, v := range g.cells {
+		if v == standingWater || v == runningWater && l.y >= miny {
 			sum++
 		}
 	}
 	return sum
 }
 
-func (g grid) String() string {
+func (g *grid) countStanding() int {
+	miny := g.top
+	sum := 0
+	for l, v := range g.cells {
+		if v == standingWater && l.y >= miny {
+			sum++
+		}
+	}
+	return sum
+}
+
+func (g *grid) String() string {
 	minx := math.MaxInt32
 	maxx := math.MinInt32
 	maxy := math.MinInt32
@@ -97,7 +110,7 @@ func (g grid) String() string {
 	return sb.String()
 }
 
-func parseInput(r io.Reader) grid {
+func parseInput(r io.Reader) *grid {
 	scanner := bufio.NewScanner(r)
 	g := newGrid(500, 0)
 
@@ -123,5 +136,6 @@ func parseInput(r io.Reader) grid {
 			}
 		}
 	}
+
 	return g
 }

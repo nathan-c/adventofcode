@@ -11,13 +11,14 @@ func main() {
 	defer f.Close()
 	g := parseInput(f)
 	pour(g, g.spring.x, g.spring.y)
-	fmt.Printf("total water: %v\n", g.countWater())
+	fmt.Printf("part1: total water: %v\n", g.countWater())
+	fmt.Printf("part2: standing water: %v\n", g.countStanding())
 	ioutil.WriteFile("out.txt", []byte(g.String()), os.ModePerm)
 }
 
-func pour(g grid, x, starty int) {
+func pour(g *grid, x, starty int) {
 	//fmt.Println(g)
-	bottom := g.bottom()
+	bottom := g.bottom
 	if starty == bottom {
 		return
 	}
@@ -57,22 +58,22 @@ func pour(g grid, x, starty int) {
 			// if we now have
 			// #    #
 			// #~~~~#
-			// then fill with standing water
+			// then fill with standing water and return
 			for x2 := lx + 1; x2 < rx; x2++ {
 				g.set(x2, y-1, standingWater)
 			}
 			return
-		} else {
-			// else we now have
-			// #   |
-			// #~~~~#
-			// then fill with standing water
-			if g.get(x-1, y-1) == empty {
-				pour(g, x-1, y-2)
-			}
-			if g.get(x+1, y-1) == empty {
-				pour(g, x+1, y-2)
-			}
+		}
+
+		// else we now have
+		// #   |
+		// #~~~~#
+		// recursively try left and right
+		if g.get(x-1, y-1) == empty {
+			pour(g, x-1, y-2)
+		}
+		if g.get(x+1, y-1) == empty {
+			pour(g, x+1, y-2)
 		}
 	}
 
